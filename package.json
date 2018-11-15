@@ -1,7 +1,7 @@
 {
   "name": "blear.utils.textarea",
   "version": "1.0.0",
-  "description": "描述",
+  "description": "textarea 相关方法，选区、定位等",
   "scripts": {
     "live": "browser-sync start --config bs-config.js",
     "test": "node ./node_modules/.bin/karma start karma.conf.js --single-run",

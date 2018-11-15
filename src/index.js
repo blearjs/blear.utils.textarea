@@ -12,10 +12,6 @@ var layout = require('blear.core.layout');
 var access = require('blear.utils.access');
 var time = require('blear.utils.time');
 
-var doc = document;
-var textareaEl = modification.create('textarea');
-var supportSetSelectionRange = 'setSelectionRange' in textareaEl;
-textareaEl = null;
 // @link https://github.com/Codecademy/textarea-helper/blob/master/textarea-helper.js
 var mirrorStyleKeys = [
     // Box Styles.
@@ -56,73 +52,42 @@ modification.insert(mirrorEle);
 /**
  * 获取当前文本输入框选区
  * @link https://github.com/kof/field-selection/blob/master/lib/field-selection.js#L45
- * @param node {Object} 元素
+ * @param el {Object} 元素
  * @returns {[Number, Number]}
  */
-exports.getSelection = function (node) {
-    if (supportSetSelectionRange) {
-        return [node.selectionStart, node.selectionEnd];
-    }
-
-    var range = doc.selection.createRange();
-
-    if (!range) {
-        return [0, 0];
-    }
-
-    var textRange = node.createTextRange();
-    var dTextRange = textRange.duplicate();
-
-    textRange.moveToBookmark(range.getBookmark());
-    dTextRange.setEndPoint('EndToStart', textRange);
-
-    var start = dTextRange.text.length;
-    var end = dTextRange.text.length + range.text.length;
-
-    return [start, end];
+exports.getSelection = function (el) {
+    return [el.selectionStart, el.selectionEnd];
 };
 
 
 /**
  * 设置选区
- * @param node {Object} 输入元素
+ * @param el {Object} 输入元素
  * @param start {Number} 起始位置
  * @param [end=start] {Number} 终点位置
  * @returns {{start: Number, end: Number, value: String}}
  */
-exports.setSelection = function (node, start, end) {
+exports.setSelection = function (el, start, end) {
     var args = access.args(arguments);
 
     if (args.length === 2) {
         end = start;
     }
 
-    time.nextFrame(function () {
-        node.focus();
-
-        if (supportSetSelectionRange) {
-            node.setSelectionRange(start, end);
-            return;
-        }
-
-        var textRange = node.createTextRange();
-        textRange.collapse(true);
-        textRange.moveStart('character', start);
-        textRange.moveEnd('character', end - start);
-        textRange.select();
-    });
+    el.focus();
+    el.setSelectionRange(start, end);
 
     return {
         start: start,
         end: end,
-        value: node.value
+        value: el.value
     };
 };
 
 
 /**
  * 插入文本
- * @param node {Object} textarea 元素
+ * @param el {Object} textarea 元素
  * @param text {String} 文本
  * @param [insertPosition] {Array|Boolean} 插入前的位置，默认为当前光标所在位置，为 true 表示当前位置
  * @param [focusRelativePostion] {Array|Boolean} 插入后光标的位置，默认为当前光标所在位置
@@ -130,13 +95,13 @@ exports.setSelection = function (node, start, end) {
  * false：定位到文本末尾
  * @returns {{start: Number, end: Number, value: String}}
  */
-exports.insert = function (node, text, insertPosition, focusRelativePostion) {
+exports.insert = function (el, text, insertPosition, focusRelativePostion) {
     var args = access.args(arguments);
-    var selection = exports.getSelection(node);
+    var selection = exports.getSelection(el);
     text = String(text);
     var start = selection[0];
     var end = selection[1];
-    var value = node.value;
+    var value = el.value;
     var textLength = text.length;
 
     switch (args.length) {
@@ -186,8 +151,8 @@ exports.insert = function (node, text, insertPosition, focusRelativePostion) {
     var focusStart = insertPosition[0] + focusRelativePostion[0];
     var focusEnd = insertPosition[0] + focusRelativePostion[1];
 
-    node.value = value = left + text + right;
-    exports.setSelection(node, focusStart, focusEnd);
+    el.value = value = left + text + right;
+    exports.setSelection(el, focusStart, focusEnd);
 
     return {
         start: focusStart,
@@ -199,29 +164,31 @@ exports.insert = function (node, text, insertPosition, focusRelativePostion) {
 
 /**
  * 获取选区坐标
- * @param node
+ * @param el
  * @returns {{start: {left: *, top: *}, end: {left: *, top: *}}}
  */
-exports.getSelectionRect = function (node) {
-    var sel = exports.getSelection(node);
-    var value = node.value || '';
+exports.getSelectionRect = function (el) {
+    var sel = exports.getSelection(el);
+    var value = el.value || '';
 
     // 复制样式
-    var nodeStyle = attribute.style(node, mirrorStyleKeys);
+    var nodeStyle = attribute.style(el, mirrorStyleKeys);
     attribute.style(mirrorEle, nodeStyle);
-    var nodeLeft = layout.clientLeft(node);
-    var nodeTop = layout.clientTop(node);
+    var nodeLeft = layout.clientLeft(el);
+    var nodeTop = layout.clientTop(el);
     var start = getSelectionRect(value, sel[0]);
     var end = getSelectionRect(value, sel[1]);
+    var scrollTop = layout.scrollTop(el);
+    var scrollLeft = layout.scrollLeft(el);
 
     return {
         start: {
-            left: nodeLeft + start.left,
-            top: nodeTop + start.top
+            left: nodeLeft + start.left - scrollLeft,
+            top: nodeTop + start.top - scrollTop
         },
         end: {
-            left: nodeLeft + end.left,
-            top: nodeTop + end.top
+            left: nodeLeft + end.left - scrollLeft,
+            top: nodeTop + end.top - scrollTop
         }
     };
 };

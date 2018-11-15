@@ -7,12 +7,30 @@
 
 'use strict';
 
-var index = require('../src/index.js');
+var textarea = require('../src/index.js');
 
 describe('blear.utils.textarea', function () {
 
-    it('exports', function () {
-        expect(index).toEqual('index');
+    it('.getSelection', function () {
+        var el = document.createElement('textarea');
+        document.body.appendChild(el);
+        var sel = textarea.getSelection(el);
+
+        expect(sel.length).toBe(2);
+        expect(sel[0]).toBe(0);
+        expect(sel[1]).toBe(0);
+    });
+
+    it('.setSelection', function () {
+        var el = document.createElement('textarea');
+        document.body.appendChild(el);
+        el.value = 'abcd1234';
+        textarea.setSelection(el, 1, 2);
+        var sel = textarea.getSelection(el);
+
+        expect(sel.length).toBe(2);
+        expect(sel[0]).toBe(1);
+        expect(sel[1]).toBe(2);
     });
 
 });

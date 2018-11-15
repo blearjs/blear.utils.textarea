@@ -71,6 +71,7 @@ document.getElementById('getSelectionRect').onclick = function () {
     var rect = textarea.getSelectionRect(textareaEl);
     attribute.style(span1Ele, rect.start);
     attribute.style(span2Ele, rect.end);
+    textareaEl.focus();
 };
 
 window.textarea = textarea;
