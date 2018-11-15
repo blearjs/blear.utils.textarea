@@ -25,7 +25,7 @@ describe('blear.utils.textarea', function () {
         var el = document.createElement('textarea');
         document.body.appendChild(el);
         el.value = 'abcd1234';
-        textarea.setSelection(el, 1, 2);
+        textarea.setSelection(el, [1, 2]);
         var sel = textarea.getSelection(el);
 
         expect(sel.length).toBe(2);
