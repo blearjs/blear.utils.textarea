@@ -1,7 +1,7 @@
 /**
  * blear.utils.textarea
  * @author ydr.me
- * @create 2016年06月04日14:09:36
+ * @create 2018年11月15日17:19:48
  */
 
 'use strict';
