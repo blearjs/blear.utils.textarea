@@ -33,44 +33,28 @@ modification.insert(span2Ele, document.body);
 
 
 document.getElementById('getSelection').onclick = function () {
-    console.log(textarea.getSelection(textareaEl));
+    document.getElementById('ret').innerHTML = JSON.stringify(textarea.getSelection(textareaEl));
 };
 
 document.getElementById('setSelection').onclick = function () {
     var length = textareaEl.value.length;
     var middle = Math.ceil(length / 2);
 
-    textarea.setSelection(textareaEl, middle - 1, middle + 1);
+    textarea.setSelection(textareaEl, [middle - 1, middle + 1]);
 };
 
 document.getElementById('insert1').onclick = function () {
-    textarea.insert(textareaEl, '[' + Date.now() + ']', true);
+    textarea.insert(textareaEl, '[' + Date.now() + ']', textarea.getSelection(textareaEl), true);
 };
 
 document.getElementById('insert2').onclick = function () {
-    textarea.insert(textareaEl, '[' + Date.now() + ']', true, false);
-};
-
-document.getElementById('insert3').onclick = function () {
-    textarea.insert(textareaEl, '[' + Date.now() + ']', true, [2, 4]);
-};
-
-document.getElementById('insert4').onclick = function () {
-    textarea.insert(textareaEl, '[' + Date.now() + ']', [2, 4]);
-};
-
-document.getElementById('insert5').onclick = function () {
-    textarea.insert(textareaEl, '[' + Date.now() + ']', [2, 4], false);
-};
-
-document.getElementById('insert6').onclick = function () {
-    textarea.insert(textareaEl, '[' + Date.now() + ']', [2, 4], [2, 4]);
+    textarea.insert(textareaEl, '[' + Date.now() + ']', textarea.getSelection(textareaEl), false);
 };
 
 document.getElementById('getSelectionRect').onclick = function () {
     var rect = textarea.getSelectionRect(textareaEl);
-    attribute.style(span1Ele, rect.start);
-    attribute.style(span2Ele, rect.end);
+    attribute.style(span1Ele, rect[0]);
+    attribute.style(span2Ele, rect[1]);
     textareaEl.focus();
 };
 

@@ -10,7 +10,6 @@ var modification = require('blear.core.modification');
 var attribute = require('blear.core.attribute');
 var layout = require('blear.core.layout');
 var access = require('blear.utils.access');
-var time = require('blear.utils.time');
 
 // @link https://github.com/Codecademy/textarea-helper/blob/master/textarea-helper.js
 var mirrorStyleKeys = [
@@ -53,119 +52,68 @@ modification.insert(mirrorEle);
  * 获取当前文本输入框选区
  * @link https://github.com/kof/field-selection/blob/master/lib/field-selection.js#L45
  * @param el {Object} 元素
- * @returns {[Number, Number]}
+ * @returns {[number, number]}
  */
 exports.getSelection = function (el) {
-    return [el.selectionStart, el.selectionEnd];
+    return [
+        el.selectionStart,
+        el.selectionEnd
+    ];
 };
 
 
 /**
  * 设置选区
  * @param el {Object} 输入元素
- * @param start {Number} 起始位置
- * @param [end=start] {Number} 终点位置
- * @returns {{start: Number, end: Number, value: String}}
+ * @param sel {Array} 选区
  */
-exports.setSelection = function (el, start, end) {
-    var args = access.args(arguments);
-
-    if (args.length === 2) {
-        end = start;
-    }
+exports.setSelection = function (el, sel) {
+    var start = sel[0];
+    var end = sel.length === 1 ? start : sel[1];
 
     el.focus();
     el.setSelectionRange(start, end);
-
-    return {
-        start: start,
-        end: end,
-        value: el.value
-    };
 };
 
 
 /**
  * 插入文本
- * @param el {Object} textarea 元素
- * @param text {String} 文本
- * @param [insertPosition] {Array|Boolean} 插入前的位置，默认为当前光标所在位置，为 true 表示当前位置
- * @param [focusRelativePostion] {Array|Boolean} 插入后光标的位置，默认为当前光标所在位置
- * true：选中插入的文本
- * false：定位到文本末尾
+ * @param el {HTMLTextAreaElement} 元素
+ * @param text {string} 文本
+ * @param sel {array} 选区位置
+ * @param [select=true] {boolean} 是否选中插入的文本
  * @returns {{start: Number, end: Number, value: String}}
  */
-exports.insert = function (el, text, insertPosition, focusRelativePostion) {
+exports.insert = function (el, text, sel, select) {
     var args = access.args(arguments);
-    var selection = exports.getSelection(el);
     text = String(text);
-    var start = selection[0];
-    var end = selection[1];
+    var start = sel[0];
+    var end = sel[1];
     var value = el.value;
     var textLength = text.length;
+    var deltaLength = end - start;
 
     switch (args.length) {
-        // insert(node, text);
-        case 2:
-            insertPosition = [start, end];
-            focusRelativePostion = [0, textLength];
-            break;
         case 3:
-            // insert(node, text, true);
-            if (args[2] === true) {
-                insertPosition = [start, end];
-            }
-            // insert(node, text, false);
-            else if (args[2] === false) {
-                insertPosition = [start + textLength, start + textLength];
-            }
-
-            focusRelativePostion = [0, textLength];
-            break;
-        //
-        case 4:
-            // insert(node, text, true);
-            if (args[2] === true) {
-                insertPosition = [start, end];
-            }
-            // insert(node, text, false);
-            else if (args[2] === false) {
-                insertPosition = [start + textLength, start + textLength];
-            }
-
-            // insert(node, text, what, true);
-            if (args[3] === true) {
-                focusRelativePostion = [0, textLength];
-            }
-            // insert(node, text, what, false);
-            else if (args[3] === false) {
-                focusRelativePostion = [textLength, textLength];
-            }
+            select = true;
             break;
     }
 
-    insertPosition[1] = insertPosition[1] || insertPosition[0];
-    focusRelativePostion[1] = focusRelativePostion[1] || focusRelativePostion[0];
-    var left = value.slice(0, insertPosition[0]);
-    var right = value.slice(insertPosition[1]);
-    var focusStart = insertPosition[0] + focusRelativePostion[0];
-    var focusEnd = insertPosition[0] + focusRelativePostion[1];
+    var left = value.slice(0, start);
+    var right = value.slice(end);
+    var relativeStart = select ? 0 : textLength;
+    var relativeEnd = select ? textLength : textLength;
+    var focusStart = start + relativeStart;
+    var focusEnd = end + relativeEnd - deltaLength;
 
-    el.value = value = left + text + right;
-    exports.setSelection(el, focusStart, focusEnd);
-
-    return {
-        start: focusStart,
-        end: focusEnd,
-        value: value
-    };
+    el.value = left + text + right;
+    exports.setSelection(el, [focusStart, focusEnd]);
 };
 
-
 /**
- * 获取选区坐标
+ * 获取选区相对于客户端的坐标
  * @param el
- * @returns {{start: {left: *, top: *}, end: {left: *, top: *}}}
+ * @returns {[{left: number, top: number},  {left: number, top: number}]}
  */
 exports.getSelectionRect = function (el) {
     var sel = exports.getSelection(el);
@@ -181,16 +129,16 @@ exports.getSelectionRect = function (el) {
     var scrollTop = layout.scrollTop(el);
     var scrollLeft = layout.scrollLeft(el);
 
-    return {
-        start: {
+    return [
+        {
             left: nodeLeft + start.left - scrollLeft,
             top: nodeTop + start.top - scrollTop
         },
-        end: {
+        {
             left: nodeLeft + end.left - scrollLeft,
             top: nodeTop + end.top - scrollTop
         }
-    };
+    ];
 };
 
 // ======================================================
@@ -221,3 +169,4 @@ function getSelectionRect(value, length) {
         top: relativeTop
     };
 }
+
