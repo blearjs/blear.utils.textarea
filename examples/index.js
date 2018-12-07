@@ -44,11 +44,15 @@ document.getElementById('setSelection').onclick = function () {
 };
 
 document.getElementById('insert1').onclick = function () {
-    textarea.insert(textareaEl, '[' + Date.now() + ']', textarea.getSelection(textareaEl), true);
+    textarea.insert(textareaEl, '[定位到这段文本之前]', textarea.getSelection(textareaEl), 0);
 };
 
 document.getElementById('insert2').onclick = function () {
-    textarea.insert(textareaEl, '[' + Date.now() + ']', textarea.getSelection(textareaEl), false);
+    textarea.insert(textareaEl, '[选中这段文本]', textarea.getSelection(textareaEl), 1);
+};
+
+document.getElementById('insert3').onclick = function () {
+    textarea.insert(textareaEl, '[定位到这段文本之后]', textarea.getSelection(textareaEl), 2);
 };
 
 document.getElementById('getSelectionRect').onclick = function () {

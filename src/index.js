@@ -61,7 +61,6 @@ exports.getSelection = function (el) {
     ];
 };
 
-
 /**
  * 设置选区
  * @param el {Object} 输入元素
@@ -75,39 +74,50 @@ exports.setSelection = function (el, sel) {
     el.setSelectionRange(start, end);
 };
 
-
 /**
  * 插入文本
  * @param el {HTMLTextAreaElement} 元素
  * @param text {string} 文本
  * @param sel {array} 选区位置
- * @param [select=true] {boolean} 是否选中插入的文本
- * @returns {{start: Number, end: Number, value: String}}
+ * @param [pos=2] {Number} 插入后光标的相对位置，0=开始，1=选中，2=结束
  */
-exports.insert = function (el, text, sel, select) {
+exports.insert = function (el, text, sel, pos) {
     var args = access.args(arguments);
     text = String(text);
     var start = sel[0];
     var end = sel[1];
     var value = el.value;
     var textLength = text.length;
-    var deltaLength = end - start;
 
-    switch (args.length) {
-        case 3:
-            select = true;
-            break;
+    if (args.length !== 4) {
+        pos = 2;
     }
 
     var left = value.slice(0, start);
     var right = value.slice(end);
-    var relativeStart = select ? 0 : textLength;
-    var relativeEnd = select ? textLength : textLength;
-    var focusStart = start + relativeStart;
-    var focusEnd = end + relativeEnd - deltaLength;
+    var focusStart = [
+        // 开始
+        start,
+        // 选中
+        start,
+        // 结束
+        start + textLength
+    ][pos];
+    var focusEnd = [
+        // 开始
+        start,
+        // 选中
+        start + textLength,
+        // 结束
+        start + textLength
+    ][pos];
 
     el.value = left + text + right;
     exports.setSelection(el, [focusStart, focusEnd]);
+};
+
+exports.wrap = function (el, text) {
+
 };
 
 /**
