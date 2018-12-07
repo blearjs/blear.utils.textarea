@@ -10,6 +10,7 @@ var modification = require('blear.core.modification');
 var attribute = require('blear.core.attribute');
 var layout = require('blear.core.layout');
 var access = require('blear.utils.access');
+var typeis = require('blear.utils.typeis');
 
 // @link https://github.com/Codecademy/textarea-helper/blob/master/textarea-helper.js
 var mirrorStyleKeys = [
@@ -78,7 +79,8 @@ var setSelection = exports.setSelection = function (el, sel) {
  * 插入文本
  * @param el {HTMLTextAreaElement} 元素
  * @param text {string} 文本
- * @param [mode=2] {Number} 插入模式，0=定位到文本开始，1=选中文本，2=定位到文本结尾
+ * @param [mode=2] {Number | Array} 插入模式，0=定位到文本开始，1=选中文本，2=定位到文本结尾
+ * 如果是一个数组，则作为相对位置进行选区选中
  */
 exports.insert = function (el, text, mode) {
     var args = access.args(arguments);
@@ -95,11 +97,22 @@ exports.insert = function (el, text, mode) {
 
     var left = value.slice(0, start);
     var right = value.slice(end);
+    var deltaStart = 0;
+    var deltaEnd = 0;
+
+    // 自定义选区
+    if (typeis.Array(mode)) {
+        deltaStart = mode[0];
+        deltaEnd = mode[1];
+        // 选中模式
+        mode = 1;
+    }
+
     var focusStart = [
         // 开始
         start,
         // 选中
-        start,
+        start + deltaStart,
         // 结束
         start + textLength
     ][mode];
@@ -107,7 +120,7 @@ exports.insert = function (el, text, mode) {
         // 开始
         start,
         // 选中
-        start + textLength,
+        deltaEnd > 0 ? start + deltaEnd : start + textLength,
         // 结束
         start + textLength
     ][mode];

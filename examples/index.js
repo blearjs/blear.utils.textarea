@@ -55,6 +55,10 @@ document.getElementById('insert3').onclick = function () {
     textarea.insert(textareaEl, '[定位到这段文本之后]', 2);
 };
 
+document.getElementById('insert4').onclick = function () {
+    textarea.insert(textareaEl, '![image]()', [9, 9]);
+};
+
 document.getElementById('getSelectionRect').onclick = function () {
     var rect = textarea.getSelectionRect(textareaEl);
     attribute.style(span1Ele, rect[0]);
