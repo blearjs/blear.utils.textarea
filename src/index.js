@@ -54,7 +54,7 @@ modification.insert(mirrorEle);
  * @param el {Object} 元素
  * @returns {[number, number]}
  */
-exports.getSelection = function (el) {
+var getSelection = exports.getSelection = function (el) {
     return [
         el.selectionStart,
         el.selectionEnd
@@ -66,7 +66,7 @@ exports.getSelection = function (el) {
  * @param el {Object} 输入元素
  * @param sel {Array} 选区
  */
-exports.setSelection = function (el, sel) {
+var setSelection = exports.setSelection = function (el, sel) {
     var start = sel[0];
     var end = sel.length === 1 ? start : sel[1];
 
@@ -78,19 +78,19 @@ exports.setSelection = function (el, sel) {
  * 插入文本
  * @param el {HTMLTextAreaElement} 元素
  * @param text {string} 文本
- * @param sel {array} 选区位置
- * @param [pos=2] {Number} 插入后光标的相对位置，0=开始，1=选中，2=结束
+ * @param [mode=2] {Number} 插入模式，0=定位到文本开始，1=选中文本，2=定位到文本结尾
  */
-exports.insert = function (el, text, sel, pos) {
+exports.insert = function (el, text, mode) {
     var args = access.args(arguments);
     text = String(text);
+    var sel = getSelection(el);
     var start = sel[0];
     var end = sel[1];
     var value = el.value;
     var textLength = text.length;
 
-    if (args.length !== 4) {
-        pos = 2;
+    if (args.length !== 3) {
+        mode = 2;
     }
 
     var left = value.slice(0, start);
@@ -102,7 +102,7 @@ exports.insert = function (el, text, sel, pos) {
         start,
         // 结束
         start + textLength
-    ][pos];
+    ][mode];
     var focusEnd = [
         // 开始
         start,
@@ -110,14 +110,53 @@ exports.insert = function (el, text, sel, pos) {
         start + textLength,
         // 结束
         start + textLength
-    ][pos];
+    ][mode];
 
     el.value = left + text + right;
-    exports.setSelection(el, [focusStart, focusEnd]);
+    setSelection(el, [focusStart, focusEnd]);
 };
 
-exports.wrap = function (el, text) {
+/**
+ * 包裹文本
+ * @param el {HTMLTextAreaElement} 元素
+ * @param before {string} 前文本
+ * @param after {string} 后文本
+ * @param [mode=0] {Number} 模式，0=切换模式，1=重复模式
+ */
+exports.wrap = function (el, before, after, mode) {
+    var args = access.args(arguments);
+    var val = el.value;
+    var sel = getSelection(el);
+    var start = sel[0];
+    var end = sel[1];
+    var begin = val.slice(0, start);
+    var finish = val.slice(end);
+    var beforeLength = before.length;
+    var afterLength = after.length;
+    var focusBefore = val.slice(start - beforeLength, start);
+    var focusCenter = val.slice(start, end);
+    var focusAfter = val.slice(end, end + afterLength);
 
+    if (args.length !== 4) {
+        mode = 0;
+    }
+
+    // unwrap
+    if (mode === 0 && focusBefore === before && focusAfter === after) {
+        el.value = begin.slice(0, -beforeLength) + focusCenter + finish.slice(afterLength);
+        setSelection(el, [
+            start - beforeLength,
+            end - beforeLength
+        ]);
+    }
+    // wrap
+    else {
+        el.value = begin + before + focusCenter + after + finish;
+        setSelection(el, [
+            start + beforeLength,
+            end + beforeLength
+        ]);
+    }
 };
 
 /**

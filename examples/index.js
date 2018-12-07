@@ -44,15 +44,15 @@ document.getElementById('setSelection').onclick = function () {
 };
 
 document.getElementById('insert1').onclick = function () {
-    textarea.insert(textareaEl, '[定位到这段文本之前]', textarea.getSelection(textareaEl), 0);
+    textarea.insert(textareaEl, '[定位到这段文本之前]', 0);
 };
 
 document.getElementById('insert2').onclick = function () {
-    textarea.insert(textareaEl, '[选中这段文本]', textarea.getSelection(textareaEl), 1);
+    textarea.insert(textareaEl, '[选中这段文本]', 1);
 };
 
 document.getElementById('insert3').onclick = function () {
-    textarea.insert(textareaEl, '[定位到这段文本之后]', textarea.getSelection(textareaEl), 2);
+    textarea.insert(textareaEl, '[定位到这段文本之后]', 2);
 };
 
 document.getElementById('getSelectionRect').onclick = function () {
@@ -61,6 +61,15 @@ document.getElementById('getSelectionRect').onclick = function () {
     attribute.style(span2Ele, rect[1]);
     textareaEl.focus();
 };
+
+document.getElementById('wrap1').onclick = function () {
+    textarea.wrap(textareaEl, '《', '》', 0);
+};
+
+document.getElementById('wrap2').onclick = function () {
+    textarea.wrap(textareaEl, '【', '】', 1);
+};
+
 
 window.textarea = textarea;
 
