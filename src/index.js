@@ -71,8 +71,66 @@ var setSelection = exports.setSelection = function (el, sel) {
     var start = sel[0];
     var end = sel.length === 1 ? start : sel[1];
 
-    el.focus();
     el.setSelectionRange(start, end);
+};
+
+/**
+ * 获取行高
+ * @param el
+ * @returns {*}
+ */
+var getLineHeight = exports.getLineHeight = function (el) {
+    // 复制样式
+    var nodeStyle = attribute.style(el, mirrorStyleKeys);
+    attribute.style(mirrorEle, nodeStyle);
+    // 重置高度
+    attribute.style(mirrorEle, 'height', 'auto');
+    mirrorEle.innerText = '1';
+    return layout.height(mirrorEle);
+};
+
+/**
+ * 获取选区相对于客户端的坐标
+ * @param el
+ * @returns {[{left: number, top: number},  {left: number, top: number}]}
+ */
+var getSelectionRect = exports.getSelectionRect = function (el) {
+    var sel = getSelection(el);
+    var value = el.value || '';
+
+    // 复制样式
+    var nodeStyle = attribute.style(el, mirrorStyleKeys);
+    attribute.style(mirrorEle, nodeStyle);
+    var nodeLeft = layout.clientLeft(el);
+    var nodeTop = layout.clientTop(el);
+    var start = _getSelectionRect(value, sel[0]);
+    var end = _getSelectionRect(value, sel[1]);
+    var scrollTop = layout.scrollTop(el);
+    var scrollLeft = layout.scrollLeft(el);
+
+    return [
+        {
+            left: nodeLeft + start.left - scrollLeft,
+            top: nodeTop + start.top - scrollTop
+        },
+        {
+            left: nodeLeft + end.left - scrollLeft,
+            top: nodeTop + end.top - scrollTop
+        }
+    ];
+};
+
+/**
+ * 聚焦，会定位到文本选区的末尾，并偏移一行
+ * @param el
+ */
+exports.focus = function (el) {
+    var selTop = getSelectionRect(el)[1].top;
+    var elTop = layout.clientTop(el);
+    var st = el.scrollTop;
+    // 偏移一行，不至于在文本域的顶部
+    el.scrollTop = Math.max(st - (elTop - selTop) - getLineHeight(el), 0);
+    el.focus();
 };
 
 /**
@@ -172,37 +230,6 @@ exports.wrap = function (el, before, after, mode) {
     }
 };
 
-/**
- * 获取选区相对于客户端的坐标
- * @param el
- * @returns {[{left: number, top: number},  {left: number, top: number}]}
- */
-exports.getSelectionRect = function (el) {
-    var sel = exports.getSelection(el);
-    var value = el.value || '';
-
-    // 复制样式
-    var nodeStyle = attribute.style(el, mirrorStyleKeys);
-    attribute.style(mirrorEle, nodeStyle);
-    var nodeLeft = layout.clientLeft(el);
-    var nodeTop = layout.clientTop(el);
-    var start = getSelectionRect(value, sel[0]);
-    var end = getSelectionRect(value, sel[1]);
-    var scrollTop = layout.scrollTop(el);
-    var scrollLeft = layout.scrollLeft(el);
-
-    return [
-        {
-            left: nodeLeft + start.left - scrollLeft,
-            top: nodeTop + start.top - scrollTop
-        },
-        {
-            left: nodeLeft + end.left - scrollLeft,
-            top: nodeTop + end.top - scrollTop
-        }
-    ];
-};
-
 // ======================================================
 // ======================================================
 // ======================================================
@@ -213,7 +240,7 @@ exports.getSelectionRect = function (el) {
  * @param length
  * @returns {{left: number, top: number}}
  */
-function getSelectionRect(value, length) {
+function _getSelectionRect(value, length) {
     mirrorEle.innerText = value.slice(0, length);
     var spanEle = modification.create('span', {
         style: spanStyles
@@ -231,4 +258,3 @@ function getSelectionRect(value, length) {
         top: relativeTop
     };
 }
-
