@@ -1,6 +1,6 @@
 {
   "name": "blear.utils.textarea",
-  "version": "1.1.1",
+  "version": "1.2.0",
   "description": "textarea 相关方法，选区、定位、插入、包裹等",
   "scripts": {
     "live": "browser-sync start --config bs-config.js",
