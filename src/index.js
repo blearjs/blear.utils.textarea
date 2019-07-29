@@ -121,15 +121,23 @@ var getSelectionRect = exports.getSelectionRect = function (el) {
 };
 
 /**
- * 聚焦，会定位到文本选区的末尾，并偏移一行
+ * 聚焦，会定位到文本选区的末尾，并偏移 N 行
  * @param el
+ * @param [offsetLines=2] {Number} 偏移行数
  */
-exports.focus = function (el) {
+exports.focus = function (el, offsetLines) {
     var selTop = getSelectionRect(el)[1].top;
     var elTop = layout.clientTop(el);
-    var st = el.scrollTop;
-    // 偏移一行，不至于在文本域的顶部
-    el.scrollTop = Math.max(st - (elTop - selTop) - getLineHeight(el), 0);
+    var elHeight = layout.innerHeight(el);
+    offsetLines = offsetLines || 2;
+
+    // 选区结束不在可视区域内
+    if (selTop < elTop || selTop > elTop + elHeight) {
+        var st = el.scrollTop;
+        // 偏移 offsetLines 行，不至于在文本域的顶部
+        el.scrollTop = Math.max(st - (elTop - selTop) - getLineHeight(el) * offsetLines, 0);
+    }
+
     el.focus();
 };
 
